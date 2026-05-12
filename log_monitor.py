@@ -30,7 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 
 class LogMonitor:
@@ -472,7 +472,7 @@ class LogMonitor:
         """Create an HTML formatted email body."""
         error_count = len(errors)
         
-        html = f"""
+        body = f"""
         <html>
             <head>
                 <style>
@@ -496,7 +496,7 @@ class LogMonitor:
         """
 
         for error in errors:
-            html += f"""
+            body += f"""
                     <tr>
                         <td>{html.escape(error['file'])}</td>
                         <td>{error['line_number']}</td>
@@ -505,7 +505,7 @@ class LogMonitor:
                     </tr>
             """
 
-        html += f"""
+        body += f"""
                 </table>
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0 15px;">
                 <p style="font-size: 12px; color: #888; text-align: center;">
@@ -515,7 +515,7 @@ class LogMonitor:
             </body>
         </html>
         """
-        return html
+        return body
 
     def send_email_notification(self, errors: List[Dict[str, Any]]) -> None:
         """Send email notification via SMTP."""

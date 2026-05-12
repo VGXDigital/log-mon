@@ -30,7 +30,11 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 
 ---
 
-## 🆕 What's New in v1.5.0
+## 🆕 What's New in v1.5.1
+
+- **Fix `html.escape` crash**: Local variable `html` in `_create_html_email` was shadowing the `html` module import, causing `'str' object has no attribute 'escape'` on every email send. Renamed local to `body`.
+
+### v1.5.0
 
 - **Per-file incremental scanning**: LogMon now tracks byte offsets per file in `.file_offsets`, so only new lines are scanned on each run. Previously reported errors are never re-reported. Handles log rotation and truncation automatically.
 
