@@ -30,7 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 
 
 class LogMonitor:
@@ -83,7 +83,7 @@ class LogMonitor:
         1. Current working directory
         2. Directory where the binary/script lives
         """
-        config = configparser.ConfigParser()
+        config = configparser.RawConfigParser()
         config_file = Path.cwd() / 'log_monitor.conf'
         if not config_file.exists():
             # For PyInstaller binaries: check next to the executable
@@ -99,7 +99,7 @@ class LogMonitor:
 
         # Path settings
         self.log_dir = Path(os.getenv('VGX_LM_LOG_DIR') or cfg('Paths', 'log_dir', fallback=Path.home() / 'logs'))
-        script_dir = Path(__file__).parent.resolve()
+        script_dir = Path(sys.executable).parent.resolve() if getattr(sys, 'frozen', False) else Path(__file__).parent.resolve()
         writable_dir = self._get_writable_directory(script_dir)
         self.notification_file = Path(cfg('Paths', 'notification_file', fallback=writable_dir / 'notifications.log'))
         self.last_check_file = Path(cfg('Paths', 'last_check_file', fallback=writable_dir / '.last_check'))
@@ -187,8 +187,13 @@ class LogMonitor:
             if not latest_version:
                 return False
 
-            current = tuple(int(x) for x in __version__.split('.'))
-            latest = tuple(int(x) for x in latest_version.split('.'))
+            try:
+                current = tuple(int(x) for x in __version__.split('.'))
+                latest = tuple(int(x) for x in latest_version.split('.'))
+            except ValueError:
+                if self.debug:
+                    self._log(f"Non-numeric version tag ignored: v{latest_version}")
+                return False
 
             if latest <= current:
                 if self.debug:
@@ -236,7 +241,11 @@ class LogMonitor:
                 try:
                     tar.extractall(tmp_dir, filter='data')
                 except TypeError:
-                    tar.extractall(tmp_dir)
+                    tmp_path = Path(tmp_dir).resolve()
+                    for member in tar.getmembers():
+                        dest = (tmp_path / member.name).resolve()
+                        dest.relative_to(tmp_path)
+                        tar.extract(member, tmp_dir)
 
             new_binary = Path(tmp_dir) / "log_monitor"
             if not new_binary.exists():
@@ -319,7 +328,11 @@ class LogMonitor:
 
     def set_last_check_time(self, timestamp: float) -> None:
         """Save the timestamp of the current check."""
-        self.last_check_file.write_text(str(timestamp))
+        try:
+            self.last_check_file.write_text(str(timestamp))
+        except OSError as e:
+            if self.debug:
+                self._log(f"Warning: could not write last-check timestamp: {e}")
 
     def _load_file_offsets(self) -> Dict[str, Dict[str, int]]:
         """Load per-file scan positions from state file.
@@ -343,7 +356,11 @@ class LogMonitor:
 
     def _save_file_offsets(self, offsets: Dict[str, Dict[str, int]]) -> None:
         """Save per-file scan positions to state file."""
-        self.file_offsets_path.write_text(json.dumps(offsets))
+        try:
+            self.file_offsets_path.write_text(json.dumps(offsets))
+        except OSError as e:
+            if self.debug:
+                self._log(f"Warning: could not save file offsets: {e}")
 
     def find_errors_in_file(self, filepath: Path, since_timestamp: float,
                             last_byte: int, last_line: int) -> tuple:
@@ -357,7 +374,7 @@ class LogMonitor:
             if stat.st_mtime < since_timestamp:
                 return [], last_byte, last_line
         except OSError:
-            return [], 0, 0
+            return [], last_byte, last_line
 
         # Log rotation detected: file is smaller than our saved offset
         if file_size < last_byte:
@@ -408,7 +425,7 @@ class LogMonitor:
 
         all_errors: List[Dict[str, Any]] = []
         log_files = self.get_log_files()
-        new_offsets: Dict[str, Dict[str, int]] = {}
+        new_offsets: Dict[str, Dict[str, int]] = dict(file_offsets)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             future_to_file = {}
@@ -499,9 +516,9 @@ class LogMonitor:
             body += f"""
                     <tr>
                         <td>{html.escape(error['file'])}</td>
-                        <td>{error['line_number']}</td>
+                        <td>{html.escape(str(error['line_number']))}</td>
                         <td><code>{html.escape(error['line_content'])}</code></td>
-                        <td>{error['timestamp']}</td>
+                        <td>{html.escape(str(error['timestamp']))}</td>
                     </tr>
             """
 
@@ -531,9 +548,14 @@ class LogMonitor:
             if not all([self.smtp_server, self.smtp_username, self.smtp_password, self.smtp_from_email, self.smtp_to_email]):
                 raise ValueError("Missing SMTP configuration. Please check your config file or environment variables.")
 
+            def _safe_header(value: str) -> str:
+                if '\r' in value or '\n' in value:
+                    raise ValueError(f"Header injection attempt in SMTP config: {value!r}")
+                return value
+
             msg = MIMEMultipart()
-            msg['From'] = self.smtp_from_email
-            msg['To'] = self.smtp_to_email
+            msg['From'] = _safe_header(self.smtp_from_email)
+            msg['To'] = _safe_header(self.smtp_to_email)
             msg['Subject'] = f"Log Monitor Alert: {error_count} errors detected"
             
             html_body = self._create_html_email(errors)

@@ -30,7 +30,19 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 
 ---
 
-## 🆕 What's New in v1.5.1
+## 🆕 What's New in v1.5.2
+
+- **Offset safety**: `scan_all_logs` now initialises `new_offsets` from the existing offsets dict, so entries for files not discovered in the current run are preserved rather than wiped
+- **Stat failure**: `find_errors_in_file` now returns the original `last_byte/last_line` on `OSError` instead of resetting to 0, preventing duplicate alerts after transient stat failures
+- **State write resilience**: `_save_file_offsets` and `set_last_check_time` now catch `OSError` so a full disk cannot silently swallow alerts
+- **Config %**: switched to `RawConfigParser` — passwords or values containing `%` no longer raise `InterpolationSyntaxError`
+- **Version compare**: pre-release tags (e.g. `v1.5.2-rc1`) in GitHub Releases no longer crash the update check
+- **PyInstaller state dir**: state files (`file_offsets`, `last_check`) now resolve relative to `sys.executable` under PyInstaller rather than the extracted bundle temp dir
+- **Email header injection**: `From`/`To` MIME headers now reject values containing `\r` or `\n`
+- **HTML escaping**: `line_number` and `timestamp` in email body now go through `html.escape()` for consistency
+- **Tarfile extraction**: unsafe fallback `extractall` replaced with per-member path validation to prevent path traversal on Python < 3.12
+
+### v1.5.1
 
 - **Fix `html.escape` crash**: Local variable `html` in `_create_html_email` was shadowing the `html` module import, causing `'str' object has no attribute 'escape'` on every email send. Renamed local to `body`.
 
