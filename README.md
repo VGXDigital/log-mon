@@ -8,7 +8,7 @@
 
 **Simple, automated log file monitoring with email notifications.**
 
-[![Release](https://img.shields.io/github/v/release/VGXDigital/LogMon?style=flat-square)](https://github.com/VGXDigital/LogMon/releases/latest)
+[![Release](https://img.shields.io/github/v/release/VGXDigital/log-mon?style=flat-square)](https://github.com/VGXDigital/log-mon/releases/latest)
 [![License](https://img.shields.io/badge/license-Proprietary-blue?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20x86__64-lightgrey?style=flat-square)]()
 
@@ -30,7 +30,11 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 
 ---
 
-## 🆕 What's New in v1.5.2
+## 🆕 What's New in v1.5.3
+
+- **Repo links**: README/DEPLOYMENT release links pointed at the stale `LogMon` slug (GitHub redirected but wasn't canonical) — updated to `log-mon`
+
+### v1.5.2
 
 - **Offset safety**: `scan_all_logs` now initialises `new_offsets` from the existing offsets dict, so entries for files not discovered in the current run are preserved rather than wiped
 - **Stat failure**: `find_errors_in_file` now returns the original `last_byte/last_line` on `OSError` instead of resetting to 0, preventing duplicate alerts after transient stat failures
@@ -115,8 +119,8 @@ nano log_monitor.conf
 
 ```bash
 # Clone the repository
-git clone https://github.com/VGXDigital/LogMon.git
-cd LogMon
+git clone https://github.com/VGXDigital/log-mon.git
+cd log-mon
 
 # Configure
 cp log_monitor.conf.example log_monitor.conf

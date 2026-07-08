@@ -30,7 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-__version__ = "1.5.2"
+__version__ = "1.5.3"
 
 
 class LogMonitor:
