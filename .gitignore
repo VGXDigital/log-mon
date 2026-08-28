@@ -48,3 +48,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.backup
+
+# graphify knowledge graph output
+graphify-out/
