@@ -30,7 +30,11 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 
 ---
 
-## 🆕 What's New in v1.5.4
+## 🆕 What's New in v1.5.5
+
+- **Update hang**: `--update` downloaded the release with no network timeout, so one unreachable GitHub CDN address hung it forever — download now times out after 30s
+
+### v1.5.4
 
 - **Update check and installer**: `log_monitor.py` and `install.sh` still used the old `LogMon` repo slug for release lookups — switched to `log-mon`
 

@@ -30,7 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-__version__ = "1.5.4"
+__version__ = "1.5.5"
 
 
 class LogMonitor:
@@ -235,7 +235,9 @@ class LogMonitor:
             tmp_dir = tempfile.mkdtemp(prefix="logmon_update_")
             tarball_path = os.path.join(tmp_dir, "release.tar.gz")
 
-            urllib.request.urlretrieve(url, tarball_path)
+            # urlretrieve has no timeout; an unreachable CDN IP hung --update forever
+            with urllib.request.urlopen(url, timeout=30) as resp, open(tarball_path, 'wb') as f:
+                shutil.copyfileobj(resp, f)
 
             with tarfile.open(tarball_path, 'r:gz') as tar:
                 try:
