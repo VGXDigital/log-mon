@@ -30,7 +30,11 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 
 ---
 
-## 🆕 What's New in v1.5.3
+## 🆕 What's New in v1.5.4
+
+- **Update check and installer**: `log_monitor.py` and `install.sh` still used the old `LogMon` repo slug for release lookups — switched to `log-mon`
+
+### v1.5.3
 
 - **Repo links**: README/DEPLOYMENT release links pointed at the stale `LogMon` slug (GitHub redirected but wasn't canonical) — updated to `log-mon`
 
@@ -87,7 +91,7 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 ### v1.4.2
 
 - **Self-updating**: LogMon auto-updates itself from GitHub Releases (checks once daily)
-- **One-line install**: `curl -sfL https://raw.githubusercontent.com/VGXDigital/LogMon/main/install.sh | bash`
+- **One-line install**: `curl -sfL https://raw.githubusercontent.com/VGXDigital/log-mon/main/install.sh | bash`
 - **Manual update**: `./log_monitor --update`
 - **Smart config lookup**: finds `log_monitor.conf` next to the binary or in the current directory
 - **Disable auto-update**: set `auto_update = false` in `[Settings]`
@@ -100,12 +104,12 @@ Scan your log files for errors, exceptions, and warnings — get instant email a
 ### Option 1: One-Line Install (Recommended)
 
 ```bash
-curl -sfL https://raw.githubusercontent.com/VGXDigital/LogMon/main/install.sh | bash
+curl -sfL https://raw.githubusercontent.com/VGXDigital/log-mon/main/install.sh | bash
 ```
 
 Or specify an install directory:
 ```bash
-curl -sfL https://raw.githubusercontent.com/VGXDigital/LogMon/main/install.sh | bash -s -- /opt/logmon
+curl -sfL https://raw.githubusercontent.com/VGXDigital/log-mon/main/install.sh | bash -s -- /opt/logmon
 ```
 
 Then configure and test:
